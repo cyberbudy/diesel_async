@@ -55,6 +55,16 @@ pub struct AsyncDieselConnectionManager<C> {
     connection_url: String,
 }
 
+impl<C> fmt::Debug for AsyncDieselConnectionManager<C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "AsyncDieselConnectionManager<{}>",
+            std::any::type_name::<C>()
+        )
+    }
+}
+
 impl<C> AsyncDieselConnectionManager<C> {
     /// Returns a new connection manager,
     /// which establishes connections to the given database URL.
@@ -247,8 +257,9 @@ pub trait PoolableConnection: AsyncConnection {
     /// if the connection is considered to be broken or not. See
     /// [ManageConnection::has_broken] for details.
     ///
-    /// The default implementation does not consider any connection as broken
-    fn is_broken(&self) -> bool {
-        false
+    /// The default implementation uses
+    /// [TransactionManager::is_broken_transaction_manager].
+    fn is_broken(&mut self) -> bool {
+        Self::TransactionManager::is_broken_transaction_manager(self)
     }
 }
